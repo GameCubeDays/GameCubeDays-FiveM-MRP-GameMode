@@ -171,8 +171,8 @@ mrp_gamemode/
 - [x] Unlock system
 
 ### Phase 6: Territory
-- [ ] Capture points
-- [ ] 30-minute tick
+- [x] Capture points
+- [x] 30-minute tick
 
 ### Phase 7: UI/HUD
 - [ ] Compass
