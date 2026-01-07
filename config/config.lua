@@ -655,26 +655,32 @@ Config.Vehicles = {
 Config.Combat = {
     -- Friendly fire
     friendlyFire = true,
-    friendlyFirePenalty = true,  -- Apply XP/money penalty
+    friendlyFirePenalty = true,
     
     -- Downed state
     downedState = true,
-    bleedoutTimeMin = 30,        -- Minimum 30 seconds before can give up
-    bleedoutTimeMax = 60,        -- Maximum 60 seconds before forced death
+    bleedoutTimeMin = 30,
+    bleedoutTimeMax = 60,
     
     -- Revive
-    reviveTime = 8,              -- Base revive time in seconds
-    reviveDistance = 2.0,        -- Must be within 2m to revive
+    reviveTime = 8,
+    reviveDistance = 2.0,
     
     -- Execution
     executionEnabled = true,
-    executionTime = 3,           -- Hold E for 3 seconds to execute
-    executionDistance = 1.5,     -- Must be within 1.5m to execute
+    executionTime = 3,
+    executionDistance = 1.5,
     
     -- Respawn
-    respawnAtBase = true,        -- Always respawn at faction base
-    loseLoadoutOnDeath = true    -- Purchased weapons lost on death
+    respawnAtBase = true,
+    loseLoadoutOnDeath = true,
+    respawnTime = 5,              -- NEW
+    
+    -- XP rewards
+    reviveXP = 25,                -- NEW
+    executionXP = 75              -- NEW
 }
+]]
 
 -- ============================================================================
 -- HUD & UI
