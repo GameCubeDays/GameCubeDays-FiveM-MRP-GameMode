@@ -150,25 +150,25 @@ mrp_gamemode/
 - [x] Resource manifest
 
 ### Phase 2: Characters
-- [ ] Character creation
-- [ ] Character selection
-- [ ] Faction models
+- [x] Character creation
+- [x] Character selection
+- [x] Faction models
 
 ### Phase 3: Progression
-- [ ] XP system
-- [ ] Money system
-- [ ] Rank system
-- [ ] Skills system
+- [x] XP system
+- [x] Money system
+- [x] Rank system
+- [x] Skills system
 
 ### Phase 4: Combat
-- [ ] Downed state
-- [ ] Revive mechanics
-- [ ] Kill tracking
+- [x] Downed state
+- [x] Revive mechanics
+- [x] Kill tracking
 
 ### Phase 5: Economy
-- [ ] Weapon shop
-- [ ] Vehicle shop
-- [ ] Unlock system
+- [x] Weapon shop
+- [x] Vehicle shop
+- [x] Unlock system
 
 ### Phase 6: Territory
 - [ ] Capture points
