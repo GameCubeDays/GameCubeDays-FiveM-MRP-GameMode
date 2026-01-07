@@ -180,8 +180,8 @@ mrp_gamemode/
 - [x] Rosters
 
 ### Phase 8: Admin
-- [ ] Admin commands
-- [ ] Logging system
+- [x] Admin commands
+- [x] Logging system
 
 ## Contributing
 
