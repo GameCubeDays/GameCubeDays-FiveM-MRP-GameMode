@@ -10,7 +10,7 @@
 const state = {
     compass: {
         enabled: false,
-        bearing: 0
+        heading: 0
     },
     capture: {
         active: false,
@@ -22,6 +22,9 @@ const state = {
         active: false,
         timer: 30,
         killer: ''
+    },
+    roster: {
+        active: false
     }
 };
 
@@ -32,12 +35,25 @@ window.addEventListener('message', function(event) {
     const data = event.data;
     
     switch(data.type) {
+        // HUD
+        case 'showHUD':
+            document.getElementById('hud-container').classList.remove('hidden');
+            break;
+        case 'hideHUD':
+            document.getElementById('hud-container').classList.add('hidden');
+            break;
+            
         // Compass
         case 'updateCompass':
-            updateCompass(data.bearing, data.enabled);
+            updateCompass(data.heading);
             break;
-        case 'toggleCompass':
-            toggleCompass(data.enabled);
+        case 'showCompass':
+            document.getElementById('compass').classList.remove('hidden');
+            state.compass.enabled = true;
+            break;
+        case 'hideCompass':
+            document.getElementById('compass').classList.add('hidden');
+            state.compass.enabled = false;
             break;
             
         // Kill Feed
@@ -50,10 +66,10 @@ window.addEventListener('message', function(event) {
             
         // Capture Point
         case 'showCapture':
-            showCaptureIndicator(data.name, data.progress, data.status, data.faction);
+            showCaptureIndicator(data.name, data.progress, data.owner, data.contested, data.tier);
             break;
         case 'updateCapture':
-            updateCaptureIndicator(data.progress, data.status, data.faction);
+            updateCaptureIndicator(data.progress, data.owner, data.contested, data.capturing);
             break;
         case 'hideCapture':
             hideCaptureIndicator();
@@ -81,6 +97,19 @@ window.addEventListener('message', function(event) {
             hideReviveProgress();
             break;
             
+        // Roster
+        case 'showRoster':
+            showRoster(data.factions, data.myFaction);
+            break;
+        case 'hideRoster':
+            hideRoster();
+            break;
+            
+        // Stats
+        case 'updateStats':
+            updateStatsDisplay(data.stats);
+            break;
+            
         // Notifications (backup)
         case 'notification':
             showNotification(data.title, data.text, data.notifyType, data.duration);
@@ -91,20 +120,30 @@ window.addEventListener('message', function(event) {
 // ============================================================================
 // COMPASS
 // ============================================================================
-function toggleCompass(enabled) {
-    const compass = document.getElementById('compass');
-    if (enabled) {
-        compass.classList.remove('hidden');
+function updateCompass(heading) {
+    if (!state.compass.enabled) {
+        document.getElementById('compass').classList.remove('hidden');
         state.compass.enabled = true;
         initCompassMarkers();
-    } else {
-        compass.classList.add('hidden');
-        state.compass.enabled = false;
     }
+    
+    state.compass.heading = heading;
+    
+    // Update bearing display
+    document.getElementById('compassBearing').textContent = Math.round(heading) + '°';
+    
+    // Calculate offset (each marker is 30px wide, 5 degrees per marker)
+    const offset = (heading / 5) * 30;
+    const centerOffset = 200; // Half of compass width
+    
+    document.getElementById('compassMarkers').style.transform = 
+        `translateX(${centerOffset - offset + (36 * 30)}px)`; // 36 = offset for -180 start
 }
 
 function initCompassMarkers() {
     const container = document.getElementById('compassMarkers');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     // Create markers for 0-360 degrees (repeat for seamless scrolling)
@@ -134,34 +173,12 @@ function initCompassMarkers() {
     }
 }
 
-function updateCompass(bearing, enabled) {
-    if (!enabled) {
-        toggleCompass(false);
-        return;
-    }
-    
-    if (!state.compass.enabled) {
-        toggleCompass(true);
-    }
-    
-    state.compass.bearing = bearing;
-    
-    // Update bearing display
-    document.getElementById('compassBearing').textContent = Math.round(bearing) + '°';
-    
-    // Calculate offset (each marker is 30px wide, 5 degrees per marker)
-    const offset = (bearing / 5) * 30;
-    const centerOffset = 200; // Half of compass width
-    
-    document.getElementById('compassMarkers').style.transform = 
-        `translateX(${centerOffset - offset + (36 * 30)}px)`; // 36 = offset for -180 start
-}
-
 // ============================================================================
 // KILL FEED
 // ============================================================================
 function addKillFeedItem(killer, victim, killerFaction, victimFaction, isTeamkill = false) {
     const feed = document.getElementById('killFeed');
+    if (!feed) return;
     
     const item = document.createElement('div');
     item.className = 'kill-feed-item';
@@ -174,12 +191,12 @@ function addKillFeedItem(killer, victim, killerFaction, victimFaction, isTeamkil
         item.classList.add('resistance');
     }
     
-    const killerClass = killerFaction === 1 ? 'military' : (killerFaction === 2 ? 'resistance' : '');
-    const victimClass = victimFaction === 1 ? 'military' : (victimFaction === 2 ? 'resistance' : '');
+    const killerClass = killerFaction === 1 ? 'military' : (killerFaction === 2 ? 'resistance' : 'civilian');
+    const victimClass = victimFaction === 1 ? 'military' : (victimFaction === 2 ? 'resistance' : 'civilian');
     
     item.innerHTML = `
         <span class="kill-feed-killer ${killerClass}">${escapeHtml(killer)}</span>
-        <span class="kill-feed-icon"><i class="fas fa-skull"></i></span>
+        <span class="kill-feed-icon">☠</span>
         <span class="kill-feed-victim ${victimClass}">${escapeHtml(victim)}</span>
     `;
     
@@ -202,61 +219,60 @@ function addKillFeedItem(killer, victim, killerFaction, victimFaction, isTeamkil
 }
 
 function clearKillFeed() {
-    document.getElementById('killFeed').innerHTML = '';
+    const feed = document.getElementById('killFeed');
+    if (feed) feed.innerHTML = '';
 }
 
 // ============================================================================
 // CAPTURE INDICATOR
 // ============================================================================
-function showCaptureIndicator(name, progress, status, faction) {
+function showCaptureIndicator(name, progress, owner, contested, tier) {
     const indicator = document.getElementById('captureIndicator');
+    if (!indicator) return;
+    
     indicator.classList.remove('hidden');
     
     document.getElementById('captureName').textContent = name;
-    updateCaptureIndicator(progress, status, faction);
+    document.getElementById('captureTier').textContent = tier ? tier.toUpperCase() : '';
+    
+    updateCaptureIndicator(progress, owner, contested, 0);
 }
 
-function updateCaptureIndicator(progress, status, faction) {
-    const indicator = document.getElementById('captureIndicator');
+function updateCaptureIndicator(progress, owner, contested, capturing) {
     const bar = document.getElementById('captureBar');
     const statusEl = document.getElementById('captureStatus');
     
+    if (!bar || !statusEl) return;
+    
     // Update classes
-    indicator.classList.remove('capturing', 'contested', 'friendly');
-    bar.classList.remove('military', 'resistance', 'contested');
-    statusEl.classList.remove('capturing', 'contested');
+    bar.classList.remove('military', 'resistance', 'neutral', 'contested');
     
     // Set progress
     bar.style.width = progress + '%';
     
-    // Set status
-    switch(status) {
-        case 'capturing':
-            indicator.classList.add('capturing');
-            statusEl.classList.add('capturing');
-            statusEl.textContent = 'Capturing...';
-            if (faction === 1) bar.classList.add('military');
-            else if (faction === 2) bar.classList.add('resistance');
-            break;
-        case 'contested':
-            indicator.classList.add('contested');
-            bar.classList.add('contested');
-            statusEl.classList.add('contested');
-            statusEl.textContent = 'Contested!';
-            break;
-        case 'friendly':
-            indicator.classList.add('friendly');
-            statusEl.textContent = 'Friendly Territory';
-            if (faction === 1) bar.classList.add('military');
-            else if (faction === 2) bar.classList.add('resistance');
-            break;
-        default:
-            statusEl.textContent = 'Neutral';
+    // Set color based on owner
+    if (contested) {
+        bar.classList.add('contested');
+        statusEl.textContent = 'CONTESTED';
+        statusEl.style.color = '#ff8800';
+    } else if (owner === 1) {
+        bar.classList.add('military');
+        statusEl.textContent = capturing === 1 ? 'CAPTURING...' : 'MILITARY';
+        statusEl.style.color = '#0064ff';
+    } else if (owner === 2) {
+        bar.classList.add('resistance');
+        statusEl.textContent = capturing === 2 ? 'CAPTURING...' : 'RESISTANCE';
+        statusEl.style.color = '#ff3232';
+    } else {
+        bar.classList.add('neutral');
+        statusEl.textContent = capturing > 0 ? 'CAPTURING...' : 'NEUTRAL';
+        statusEl.style.color = '#888888';
     }
 }
 
 function hideCaptureIndicator() {
-    document.getElementById('captureIndicator').classList.add('hidden');
+    const indicator = document.getElementById('captureIndicator');
+    if (indicator) indicator.classList.add('hidden');
 }
 
 // ============================================================================
@@ -264,13 +280,17 @@ function hideCaptureIndicator() {
 // ============================================================================
 function showDeathScreen(killer, timer) {
     const screen = document.getElementById('deathScreen');
+    if (!screen) return;
+    
     screen.classList.remove('hidden');
     
     const killerEl = document.getElementById('deathKiller');
-    if (killer) {
-        killerEl.innerHTML = 'Killed by <span>' + escapeHtml(killer) + '</span>';
-    } else {
-        killerEl.textContent = 'You died';
+    if (killerEl) {
+        if (killer) {
+            killerEl.innerHTML = 'Killed by <span class="killer-name">' + escapeHtml(killer) + '</span>';
+        } else {
+            killerEl.textContent = 'You died';
+        }
     }
     
     state.death.active = true;
@@ -286,17 +306,22 @@ function updateDeathTimer(timer, canGiveUp) {
     const timerText = document.getElementById('deathTimerText');
     const timerCount = document.getElementById('deathTimerCount');
     
-    timerCount.textContent = timer;
+    if (timerCount) timerCount.textContent = timer;
     
-    if (canGiveUp) {
-        timerText.textContent = 'Hold [E] to give up: ';
-    } else {
-        timerText.textContent = 'Wait to give up: ';
+    if (timerText) {
+        if (canGiveUp) {
+            timerText.textContent = 'Hold [E] to give up: ';
+            timerText.classList.add('can-give-up');
+        } else {
+            timerText.textContent = 'Wait to give up: ';
+            timerText.classList.remove('can-give-up');
+        }
     }
 }
 
 function hideDeathScreen() {
-    document.getElementById('deathScreen').classList.add('hidden');
+    const screen = document.getElementById('deathScreen');
+    if (screen) screen.classList.add('hidden');
     state.death.active = false;
 }
 
@@ -305,16 +330,88 @@ function hideDeathScreen() {
 // ============================================================================
 function showReviveProgress(progress = 0) {
     const revive = document.getElementById('reviveProgress');
-    revive.classList.remove('hidden');
-    updateReviveProgress(progress);
+    if (revive) {
+        revive.classList.remove('hidden');
+        updateReviveProgress(progress);
+    }
 }
 
 function updateReviveProgress(progress) {
-    document.getElementById('reviveBar').style.width = progress + '%';
+    const bar = document.getElementById('reviveBar');
+    if (bar) bar.style.width = progress + '%';
 }
 
 function hideReviveProgress() {
-    document.getElementById('reviveProgress').classList.add('hidden');
+    const revive = document.getElementById('reviveProgress');
+    if (revive) revive.classList.add('hidden');
+}
+
+// ============================================================================
+// ROSTER (TAB SCOREBOARD)
+// ============================================================================
+function showRoster(factions, myFaction) {
+    const roster = document.getElementById('roster');
+    if (!roster) return;
+    
+    roster.classList.remove('hidden');
+    state.roster.active = true;
+    
+    const content = document.getElementById('rosterContent');
+    if (!content) return;
+    
+    let html = '';
+    
+    // Build roster for each faction
+    for (let factionId = 1; factionId <= 3; factionId++) {
+        const faction = factions[factionId];
+        if (!faction || faction.players.length === 0) continue;
+        
+        const factionClass = factionId === 1 ? 'military' : (factionId === 2 ? 'resistance' : 'civilian');
+        const isMyFaction = factionId === myFaction;
+        
+        html += `
+            <div class="roster-faction ${factionClass} ${isMyFaction ? 'my-faction' : ''}">
+                <div class="roster-faction-header">
+                    <span class="faction-name">${escapeHtml(faction.name)}</span>
+                    <span class="faction-count">${faction.players.length}</span>
+                </div>
+                <div class="roster-players">
+        `;
+        
+        for (const player of faction.players) {
+            const kd = player.deaths > 0 ? (player.kills / player.deaths).toFixed(2) : player.kills.toFixed(2);
+            
+            html += `
+                <div class="roster-player">
+                    <span class="player-rank">[${escapeHtml(player.whitelist)}] ${escapeHtml(player.rank)}</span>
+                    <span class="player-name">${escapeHtml(player.name)}</span>
+                    <span class="player-kd">${player.kills}/${player.deaths}</span>
+                    <span class="player-ping">${player.ping}ms</span>
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    content.innerHTML = html;
+}
+
+function hideRoster() {
+    const roster = document.getElementById('roster');
+    if (roster) roster.classList.add('hidden');
+    state.roster.active = false;
+}
+
+// ============================================================================
+// STATS DISPLAY
+// ============================================================================
+function updateStatsDisplay(stats) {
+    // Update any persistent stats display elements
+    // This is called when player stats change
 }
 
 // ============================================================================
@@ -322,6 +419,7 @@ function hideReviveProgress() {
 // ============================================================================
 function showNotification(title, text, type = 'info', duration = 5000) {
     const container = document.getElementById('notifications');
+    if (!container) return;
     
     const notification = document.createElement('div');
     notification.className = 'notification ' + type;
@@ -346,6 +444,7 @@ function showNotification(title, text, type = 'info', duration = 5000) {
 // UTILITY FUNCTIONS
 // ============================================================================
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -368,17 +467,9 @@ function GetParentResourceName() {
 }
 
 // ============================================================================
-// KEYBOARD HANDLERS (for death screen)
-// ============================================================================
-document.addEventListener('keydown', function(e) {
-    if (state.death.active && state.death.timer <= 30 && e.key === 'e') {
-        sendToLua('giveUp');
-    }
-});
-
-// ============================================================================
 // INITIALIZATION
 // ============================================================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[MRP] NUI Script loaded');
+    initCompassMarkers();
 });

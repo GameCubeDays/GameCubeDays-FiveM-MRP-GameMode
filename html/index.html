@@ -3,56 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MRP Gamemode</title>
+    <title>MRP HUD</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Compass HUD -->
-    <div id="compass" class="compass hidden">
-        <div class="compass-strip">
-            <div class="compass-markers" id="compassMarkers"></div>
-        </div>
-        <div class="compass-bearing" id="compassBearing">0°</div>
-    </div>
-    
-    <!-- Kill Feed -->
-    <div id="killFeed" class="kill-feed"></div>
-    
-    <!-- Capture Point Indicator -->
-    <div id="captureIndicator" class="capture-indicator hidden">
-        <div class="capture-name" id="captureName">Point Name</div>
-        <div class="capture-bar-container">
-            <div class="capture-bar" id="captureBar"></div>
-        </div>
-        <div class="capture-status" id="captureStatus">Capturing...</div>
-    </div>
-    
-    <!-- Death Screen -->
-    <div id="deathScreen" class="death-screen hidden">
-        <div class="death-content">
-            <div class="death-icon"><i class="fas fa-skull"></i></div>
-            <div class="death-title">YOU DIED</div>
-            <div class="death-killer" id="deathKiller">Killed by Unknown</div>
-            <div class="death-timer" id="deathTimer">
-                <span id="deathTimerText">Hold to give up: </span>
-                <span id="deathTimerCount">30</span>s
+    <!-- Main HUD Container -->
+    <div id="hud-container">
+        
+        <!-- Compass (Top Center) -->
+        <div id="compass" class="hidden">
+            <div class="compass-container">
+                <div class="compass-center-marker"></div>
+                <div id="compassMarkers" class="compass-markers"></div>
             </div>
-            <div class="death-hint">Wait for a teammate to revive you</div>
+            <div id="compassBearing" class="compass-bearing">0°</div>
         </div>
-    </div>
-    
-    <!-- Revive Progress -->
-    <div id="reviveProgress" class="revive-progress hidden">
-        <div class="revive-text">Reviving...</div>
-        <div class="revive-bar-container">
-            <div class="revive-bar" id="reviveBar"></div>
+        
+        <!-- Kill Feed (Top Right) -->
+        <div id="killFeed" class="kill-feed"></div>
+        
+        <!-- Capture Point Indicator (Center) -->
+        <div id="captureIndicator" class="capture-indicator hidden">
+            <div class="capture-header">
+                <span id="captureName">Point Name</span>
+                <span id="captureTier" class="capture-tier">MEDIUM</span>
+            </div>
+            <div class="capture-bar-container">
+                <div id="captureBar" class="capture-bar"></div>
+            </div>
+            <div id="captureStatus" class="capture-status">NEUTRAL</div>
         </div>
+        
+        <!-- Death Screen (Full Screen Overlay) -->
+        <div id="deathScreen" class="death-screen hidden">
+            <div class="death-content">
+                <div class="death-icon">☠</div>
+                <div id="deathKiller" class="death-killer">You died</div>
+                <div class="death-timer">
+                    <span id="deathTimerText">Wait to give up: </span>
+                    <span id="deathTimerCount">30</span>s
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revive Progress (Bottom Center when being revived) -->
+        <div id="reviveProgress" class="revive-progress hidden">
+            <div class="revive-text">Being Revived...</div>
+            <div class="revive-bar-container">
+                <div id="reviveBar" class="revive-bar"></div>
+            </div>
+        </div>
+        
+        <!-- TAB Roster (Center Overlay) -->
+        <div id="roster" class="roster hidden">
+            <div class="roster-header">
+                <span class="roster-title">PLAYERS</span>
+            </div>
+            <div id="rosterContent" class="roster-content">
+                <!-- Populated by JS -->
+            </div>
+            <div class="roster-footer">
+                <span>TAB to close</span>
+            </div>
+        </div>
+        
+        <!-- Notifications Container (Bottom Right) -->
+        <div id="notifications" class="notifications"></div>
+        
     </div>
-    
-    <!-- Notification Container (backup for non-ox_lib notifications) -->
-    <div id="notifications" class="notifications"></div>
-    
-    <script src="script.js"></script>
 </body>
+<script src="script.js"></script>
 </html>

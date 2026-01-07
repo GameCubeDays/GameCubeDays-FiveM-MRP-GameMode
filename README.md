@@ -175,9 +175,9 @@ mrp_gamemode/
 - [x] 30-minute tick
 
 ### Phase 7: UI/HUD
-- [ ] Compass
-- [ ] Nameplates
-- [ ] Rosters
+- [x] Compass
+- [x] Nameplates
+- [x] Rosters
 
 ### Phase 8: Admin
 - [ ] Admin commands

@@ -1,7 +1,12 @@
 /* ============================================================================
-   MRP GAMEMODE - CUSTOM UI STYLES
-   ============================================================================ */
+   MRP GAMEMODE - NUI STYLESHEET
+   ============================================================================
+   All styles for HUD elements, compass, kill feed, capture indicators, etc.
+*/
 
+/* ============================================================================
+   GLOBAL RESET & BASE STYLES
+   ============================================================================ */
 * {
     margin: 0;
     padding: 0;
@@ -10,6 +15,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
     overflow: hidden;
     user-select: none;
 }
@@ -18,111 +24,106 @@ body {
     display: none !important;
 }
 
+#hud-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
 /* ============================================================================
    COMPASS
    ============================================================================ */
-.compass {
-    position: fixed;
+#compass {
+    position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 400px;
     height: 50px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.compass-strip {
+.compass-container {
     position: relative;
     width: 100%;
     height: 35px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
+    border-bottom: 2px solid rgba(255,255,255,0.3);
     overflow: hidden;
 }
 
+.compass-center-marker {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 100%;
+    background: #ff4444;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(255,68,68,0.5);
+}
+
 .compass-markers {
+    display: flex;
     position: absolute;
     top: 0;
     height: 100%;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    transition: transform 0.1s ease-out;
+    transition: transform 0.05s linear;
 }
 
 .compass-marker {
-    display: inline-flex;
+    width: 30px;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 100%;
-    color: rgba(255, 255, 255, 0.5);
+    justify-content: flex-end;
+    padding-bottom: 2px;
     font-size: 10px;
-}
-
-.compass-marker.cardinal {
-    color: #fff;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.compass-marker.cardinal.north {
-    color: #ff4444;
+    color: rgba(255,255,255,0.6);
 }
 
 .compass-marker .tick {
     width: 1px;
     height: 8px;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.3);
     margin-bottom: 2px;
 }
 
-.compass-marker.cardinal .tick {
-    height: 15px;
-    width: 2px;
-    background: #fff;
+.compass-marker.cardinal {
+    font-size: 14px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.9);
 }
 
-.compass-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.compass-marker.cardinal .tick {
+    height: 12px;
     width: 2px;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255,255,255,0.7);
+}
+
+.compass-marker.north {
+    color: #ff4444;
+}
+
+.compass-marker.north .tick {
+    background: #ff4444;
 }
 
 .compass-bearing {
     text-align: center;
-    color: #fff;
     font-size: 12px;
-    font-weight: bold;
-    padding: 2px 0;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-/* Center indicator */
-.compass::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid #fff;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
 }
 
 /* ============================================================================
    KILL FEED
    ============================================================================ */
 .kill-feed {
-    position: fixed;
+    position: absolute;
     top: 80px;
     right: 20px;
     width: 300px;
@@ -132,14 +133,16 @@ body {
 }
 
 .kill-feed-item {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 8px 12px;
-    border-radius: 4px;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
-    animation: slideIn 0.3s ease-out;
-    border-left: 3px solid #fff;
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 3px;
+    font-size: 13px;
+    animation: killFeedSlide 0.3s ease-out;
+    border-left: 3px solid #666;
 }
 
 .kill-feed-item.military {
@@ -152,10 +155,35 @@ body {
 
 .kill-feed-item.teamkill {
     border-left-color: #ff8800;
-    background: rgba(255, 136, 0, 0.2);
+    background: rgba(255,136,0,0.2);
 }
 
-@keyframes slideIn {
+.kill-feed-killer {
+    font-weight: bold;
+}
+
+.kill-feed-killer.military { color: #4d9fff; }
+.kill-feed-killer.resistance { color: #ff6666; }
+.kill-feed-killer.civilian { color: #cccccc; }
+
+.kill-feed-icon {
+    color: #ff4444;
+    font-size: 12px;
+}
+
+.kill-feed-victim {
+    opacity: 0.8;
+}
+
+.kill-feed-victim.military { color: #4d9fff; }
+.kill-feed-victim.resistance { color: #ff6666; }
+.kill-feed-victim.civilian { color: #cccccc; }
+
+.kill-feed-item.fade-out {
+    animation: killFeedFade 0.5s ease-out forwards;
+}
+
+@keyframes killFeedSlide {
     from {
         opacity: 0;
         transform: translateX(50px);
@@ -166,104 +194,53 @@ body {
     }
 }
 
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
+@keyframes killFeedFade {
     to {
         opacity: 0;
+        transform: translateX(50px);
     }
-}
-
-.kill-feed-item.fade-out {
-    animation: fadeOut 0.5s ease-out forwards;
-}
-
-.kill-feed-killer {
-    color: #fff;
-    font-weight: bold;
-    font-size: 13px;
-}
-
-.kill-feed-killer.military {
-    color: #4d9fff;
-}
-
-.kill-feed-killer.resistance {
-    color: #ff6666;
-}
-
-.kill-feed-icon {
-    color: #888;
-    font-size: 12px;
-}
-
-.kill-feed-victim {
-    color: #fff;
-    font-weight: bold;
-    font-size: 13px;
-}
-
-.kill-feed-victim.military {
-    color: #4d9fff;
-}
-
-.kill-feed-victim.resistance {
-    color: #ff6666;
 }
 
 /* ============================================================================
-   CAPTURE POINT INDICATOR
+   CAPTURE INDICATOR
    ============================================================================ */
 .capture-indicator {
-    position: fixed;
-    bottom: 150px;
+    position: absolute;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: 300px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 15px;
+    padding: 15px 20px;
+    background: rgba(0,0,0,0.8);
+    border-radius: 5px;
     text-align: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.capture-indicator.capturing {
-    border-color: #ffaa00;
-    animation: pulse 1s infinite;
-}
-
-.capture-indicator.contested {
-    border-color: #ff4444;
-}
-
-.capture-indicator.friendly {
-    border-color: #44ff44;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(255, 170, 0, 0.8);
-    }
-}
-
-.capture-name {
-    color: #fff;
-    font-size: 16px;
-    font-weight: bold;
+.capture-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
+}
+
+#captureName {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.capture-tier {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .capture-bar-container {
     width: 100%;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
+    height: 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 6px;
     overflow: hidden;
     margin-bottom: 8px;
 }
@@ -271,43 +248,37 @@ body {
 .capture-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #ffaa00, #ff8800);
-    border-radius: 10px;
-    transition: width 0.3s ease-out;
+    transition: width 0.3s ease-out, background-color 0.3s;
+    border-radius: 6px;
 }
 
 .capture-bar.military {
-    background: linear-gradient(90deg, #0064ff, #0088ff);
+    background: linear-gradient(90deg, #0044aa, #0064ff);
 }
 
 .capture-bar.resistance {
-    background: linear-gradient(90deg, #ff3232, #ff5555);
+    background: linear-gradient(90deg, #aa2222, #ff3232);
+}
+
+.capture-bar.neutral {
+    background: linear-gradient(90deg, #555555, #888888);
 }
 
 .capture-bar.contested {
-    background: linear-gradient(90deg, #ff4444, #ffaa00, #ff4444);
-    background-size: 200% 100%;
-    animation: contestedBar 1s linear infinite;
+    background: linear-gradient(90deg, #aa5500, #ff8800);
+    animation: contestedPulse 1s infinite;
 }
 
-@keyframes contestedBar {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 200% 0%; }
+@keyframes contestedPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 .capture-status {
-    color: #ccc;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.capture-status.capturing {
-    color: #ffaa00;
-}
-
-.capture-status.contested {
-    color: #ff4444;
+    letter-spacing: 2px;
 }
 
 /* ============================================================================
@@ -317,140 +288,264 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(ellipse at center, rgba(80,0,0,0.8) 0%, rgba(20,0,0,0.95) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    animation: deathFadeIn 0.5s ease-out;
+}
+
+@keyframes deathFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .death-content {
     text-align: center;
-    color: #fff;
 }
 
 .death-icon {
     font-size: 80px;
-    color: #ff4444;
     margin-bottom: 20px;
     animation: deathPulse 2s infinite;
 }
 
 @keyframes deathPulse {
-    0%, 100% {
-        opacity: 0.5;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-}
-
-.death-title {
-    font-size: 48px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 5px;
-    margin-bottom: 15px;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
 }
 
 .death-killer {
-    font-size: 20px;
-    color: #ccc;
+    font-size: 24px;
     margin-bottom: 30px;
 }
 
-.death-killer span {
-    color: #ff6666;
+.death-killer .killer-name {
+    color: #ff4444;
     font-weight: bold;
 }
 
 .death-timer {
+    font-size: 18px;
+    color: rgba(255,255,255,0.7);
+}
+
+.death-timer .can-give-up {
+    color: #44ff44;
+}
+
+#deathTimerCount {
     font-size: 24px;
-    margin-bottom: 15px;
-}
-
-.death-timer #deathTimerCount {
-    color: #ffaa00;
     font-weight: bold;
-}
-
-.death-hint {
-    font-size: 14px;
-    color: #888;
-    font-style: italic;
+    color: #ff4444;
 }
 
 /* ============================================================================
    REVIVE PROGRESS
    ============================================================================ */
 .revive-progress {
-    position: fixed;
+    position: absolute;
     bottom: 200px;
     left: 50%;
     transform: translateX(-50%);
     width: 250px;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
+    padding: 10px 15px;
+    background: rgba(0,0,0,0.8);
+    border-radius: 5px;
     border: 2px solid #44ff44;
+    text-align: center;
 }
 
 .revive-text {
-    color: #44ff44;
     font-size: 14px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    color: #44ff44;
 }
 
 .revive-bar-container {
     width: 100%;
-    height: 15px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .revive-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #44ff44, #88ff88);
-    border-radius: 8px;
+    background: #44ff44;
     transition: width 0.1s linear;
+    border-radius: 4px;
 }
 
 /* ============================================================================
-   NOTIFICATIONS (Backup)
+   ROSTER (TAB SCOREBOARD)
+   ============================================================================ */
+.roster {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    max-height: 70vh;
+    background: rgba(0,0,0,0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.roster-header {
+    padding: 15px 20px;
+    background: rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.roster-title {
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.roster-content {
+    padding: 10px;
+    max-height: calc(70vh - 100px);
+    overflow-y: auto;
+}
+
+.roster-faction {
+    margin-bottom: 15px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.roster-faction.military {
+    border-left: 4px solid #0064ff;
+}
+
+.roster-faction.resistance {
+    border-left: 4px solid #ff3232;
+}
+
+.roster-faction.civilian {
+    border-left: 4px solid #888888;
+}
+
+.roster-faction.my-faction {
+    background: rgba(255,255,255,0.05);
+}
+
+.roster-faction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.1);
+}
+
+.faction-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.roster-faction.military .faction-name { color: #4d9fff; }
+.roster-faction.resistance .faction-name { color: #ff6666; }
+.roster-faction.civilian .faction-name { color: #aaaaaa; }
+
+.faction-count {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.roster-players {
+    padding: 5px 0;
+}
+
+.roster-player {
+    display: grid;
+    grid-template-columns: 100px 1fr 60px 50px;
+    gap: 10px;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.roster-player:last-child {
+    border-bottom: none;
+}
+
+.player-rank {
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
+}
+
+.player-name {
+    font-weight: bold;
+}
+
+.player-kd {
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+}
+
+.player-ping {
+    text-align: right;
+    color: rgba(255,255,255,0.5);
+}
+
+.roster-footer {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+}
+
+/* ============================================================================
+   NOTIFICATIONS
    ============================================================================ */
 .notifications {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 350px;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 999;
 }
 
 .notification {
-    background: rgba(0, 0, 0, 0.85);
-    padding: 12px 16px;
-    border-radius: 6px;
-    border-left: 4px solid #fff;
+    padding: 12px 15px;
+    background: rgba(0,0,0,0.8);
+    border-radius: 5px;
+    border-left: 4px solid #888;
     animation: notifySlide 0.3s ease-out;
+}
+
+.notification.info { border-left-color: #0088ff; }
+.notification.success { border-left-color: #44ff44; }
+.notification.warning { border-left-color: #ff8800; }
+.notification.error { border-left-color: #ff4444; }
+
+.notification-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.notification-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
 }
 
 @keyframes notifySlide {
     from {
         opacity: 0;
-        transform: translateX(-50px);
+        transform: translateX(50px);
     }
     to {
         opacity: 1;
@@ -458,47 +553,22 @@ body {
     }
 }
 
-.notification.success {
-    border-left-color: #44ff44;
-}
-
-.notification.error {
-    border-left-color: #ff4444;
-}
-
-.notification.info {
-    border-left-color: #4488ff;
-}
-
-.notification.warning {
-    border-left-color: #ffaa00;
-}
-
-.notification-title {
-    color: #fff;
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 4px;
-}
-
-.notification-text {
-    color: #ccc;
-    font-size: 12px;
-}
-
 /* ============================================================================
-   RESPONSIVE
+   SCROLLBAR STYLING
    ============================================================================ */
-@media (max-width: 768px) {
-    .compass {
-        width: 300px;
-    }
-    
-    .kill-feed {
-        width: 250px;
-    }
-    
-    .capture-indicator {
-        width: 250px;
-    }
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
 }
